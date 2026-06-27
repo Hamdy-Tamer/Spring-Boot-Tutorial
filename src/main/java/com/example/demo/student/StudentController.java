@@ -32,11 +32,20 @@ public class StudentController {
         studentService.deleteStudent(studentID);
     }
 
+    // For Body in Postman
     @PutMapping(path = "{studentID}")
     public void updateStudent(
             @PathVariable("studentID") Long studentID,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email){
-        studentService.updateStudent(studentID, name, email);
+            @RequestBody Student student){
+
+        studentService.updateStudent(studentID, student);
+    }
+
+    @PatchMapping(path = "{studentID}")
+    public void updateStudentPatch(
+            @PathVariable Long studentID,
+            @RequestBody Student student){
+
+        studentService.patchStudent(studentID, student);
     }
 }
