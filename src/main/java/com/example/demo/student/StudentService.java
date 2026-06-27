@@ -3,15 +3,16 @@ package com.example.demo.student;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+
 @Service
-public class StudentService{
+public class StudentService {
 
     private final StudentRepository studentRepository;
 
@@ -20,8 +21,7 @@ public class StudentService{
         this.studentRepository = studentRepository;
     }
 
-    @GetMapping
-    public List<Student> getStudents(){
+    public List<Student> getStudents() {
         return studentRepository.findAll();
     }
 
@@ -29,36 +29,84 @@ public class StudentService{
         Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
 
         if(studentOptional.isPresent()){
-            throw new IllegalStateException("Email is taken");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is taken");
         }
         studentRepository.save(student);
     }
 
-    public void deleteStudent(Long studentID){
+    public void deleteStudent(Long studentID) {
         boolean exists = studentRepository.existsById(studentID);
 
         if(!exists){
-            throw new IllegalStateException("Student with id " + studentID + " doesn't exist");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Student with id " + studentID + " doesn't exist"
+            );
         }
+
         studentRepository.deleteById(studentID);
     }
 
+    // PUT Request ==> Full update
     @Transactional
-    public void updateStudent(Long studentID, String name, String email) {
-        Student student = studentRepository.findById(studentID).orElseThrow(() -> new IllegalStateException(
-                "Student with id " + studentID + " doesn't exist"));
+    public void updateStudent(Long studentID, Student updatedStudent) {
+        Student student = studentRepository.findById(studentID)
+                .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Student with id " + studentID + " doesn't exist"
+                        ));
 
-                if(name != null && !name.isEmpty() && !Objects.equals(student.getName(), name)){
-                    student.setName(name);
-                }
+        if(updatedStudent.getName() != null &&
+                !Objects.equals(student.getName(), updatedStudent.getName())){
 
-                if(email != null && !email.isEmpty() && !Objects.equals(student.getEmail(), email)){
-                    Optional<Student> studentOptional = studentRepository.findStudentByEmail(email);
+            student.setName(updatedStudent.getName());
+        }
 
-                    if(studentOptional.isPresent()){
-                        throw new IllegalStateException("Email is taken");
-                    }
-                    student.setEmail(email);
-                }
+        if(updatedStudent.getEmail() != null && !Objects.equals(student.getEmail(), updatedStudent.getEmail())){
+            Optional<Student> studentOptional = studentRepository.findStudentByEmail(updatedStudent.getEmail());
+
+            if(studentOptional.isPresent()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is taken");
+            }
+            student.setEmail(updatedStudent.getEmail());
+        }
+
+        if(updatedStudent.getDob() != null &&
+                !Objects.equals(student.getDob(), updatedStudent.getDob())){
+
+            student.setDob(updatedStudent.getDob());
+        }
+
+    }
+
+    // PATCH Request ==> Partial update
+    @Transactional
+    public void patchStudent(Long studentID, Student updatedStudent) {
+
+        Student student = studentRepository.findById(studentID)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Student with id " + studentID + " doesn't exist"
+                        ));
+
+        if(updatedStudent.getName() != null){
+            student.setName(updatedStudent.getName());
+        }
+
+        if(updatedStudent.getEmail() != null && !Objects.equals(student.getEmail(), updatedStudent.getEmail())){
+            Optional<Student> studentOptional = studentRepository.findStudentByEmail(updatedStudent.getEmail());
+
+            if(studentOptional.isPresent()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is taken");
+            }
+
+            student.setEmail(updatedStudent.getEmail());
+        }
+
+        if(updatedStudent.getDob() != null){
+
+            student.setDob(updatedStudent.getDob());
+        }
     }
 }
