@@ -25,16 +25,25 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
+
     public void addNewStudent(Student student) {
-        Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
+
+        Optional<Student> studentOptional =
+                studentRepository.findStudentByEmail(student.getEmail());
 
         if(studentOptional.isPresent()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is taken");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Email is taken"
+            );
         }
+
         studentRepository.save(student);
     }
 
+
     public void deleteStudent(Long studentID) {
+
         boolean exists = studentRepository.existsById(studentID);
 
         if(!exists){
@@ -47,14 +56,19 @@ public class StudentService {
         studentRepository.deleteById(studentID);
     }
 
+
+
     // PUT Request ==> Full update
     @Transactional
     public void updateStudent(Long studentID, Student updatedStudent) {
+
         Student student = studentRepository.findById(studentID)
-                .orElseThrow(() -> new ResponseStatusException(
+                .orElseThrow(() ->
+                        new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
                                 "Student with id " + studentID + " doesn't exist"
                         ));
+
 
         if(updatedStudent.getName() != null &&
                 !Objects.equals(student.getName(), updatedStudent.getName())){
@@ -62,14 +76,24 @@ public class StudentService {
             student.setName(updatedStudent.getName());
         }
 
-        if(updatedStudent.getEmail() != null && !Objects.equals(student.getEmail(), updatedStudent.getEmail())){
-            Optional<Student> studentOptional = studentRepository.findStudentByEmail(updatedStudent.getEmail());
+
+        if(updatedStudent.getEmail() != null &&
+                !Objects.equals(student.getEmail(), updatedStudent.getEmail())){
+
+            Optional<Student> studentOptional =
+                    studentRepository.findStudentByEmail(updatedStudent.getEmail());
+
 
             if(studentOptional.isPresent()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is taken");
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Email is taken"
+                );
             }
+
             student.setEmail(updatedStudent.getEmail());
         }
+
 
         if(updatedStudent.getDob() != null &&
                 !Objects.equals(student.getDob(), updatedStudent.getDob())){
@@ -78,6 +102,8 @@ public class StudentService {
         }
 
     }
+
+
 
     // PATCH Request ==> Partial update
     @Transactional
@@ -90,23 +116,39 @@ public class StudentService {
                                 "Student with id " + studentID + " doesn't exist"
                         ));
 
+
         if(updatedStudent.getName() != null){
+
             student.setName(updatedStudent.getName());
         }
 
-        if(updatedStudent.getEmail() != null && !Objects.equals(student.getEmail(), updatedStudent.getEmail())){
-            Optional<Student> studentOptional = studentRepository.findStudentByEmail(updatedStudent.getEmail());
+
+        if(updatedStudent.getEmail() != null &&
+                !Objects.equals(student.getEmail(), updatedStudent.getEmail())){
+
+
+            Optional<Student> studentOptional =
+                    studentRepository.findStudentByEmail(updatedStudent.getEmail());
+
 
             if(studentOptional.isPresent()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is taken");
+
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Email is taken"
+                );
             }
+
 
             student.setEmail(updatedStudent.getEmail());
         }
+
+
 
         if(updatedStudent.getDob() != null){
 
             student.setDob(updatedStudent.getDob());
         }
+
     }
 }

@@ -16,9 +16,11 @@ public class StudentConfig {
         return args -> {
             Student hamdy = new Student("Hamdy", "hamdytamer253@gmail.com", LocalDate.of(2004, 8, 29));
             Student farah = new Student("Farah", "farahahmed690@gmail.com", LocalDate.of(2001, 5, 7));
+            Student tamer = new Student("Tamer", "tamerhamdy470@gmail.com", LocalDate.of(1974, 10, 30));
+
 
             repository.saveAll(
-                    List.of(hamdy, farah)
+                    List.of(hamdy, farah, tamer)
             );
         };
     }
