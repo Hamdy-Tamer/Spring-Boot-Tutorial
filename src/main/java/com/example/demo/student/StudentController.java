@@ -1,15 +1,17 @@
 package com.example.demo.student;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
+
 @RestController
-@RequestMapping(path = "api/v1/students")
-
+@RequestMapping(path = "/api/v1/students")
 public class StudentController {
-
     private final StudentService studentService;
 
     @Autowired
@@ -17,35 +19,44 @@ public class StudentController {
         this.studentService = studentService;
     }
 
+    // Get all students
     @GetMapping
-    public List<Student> getStudents(){
-        return studentService.getStudents();
+    public List<StudentResponse> getStudents(){
+        return studentService.getStudents()
+                .stream()
+                .map(StudentResponse::fromStudent)
+                .toList();
     }
 
+    // Add new student
     @PostMapping
-    public void registerNewStudent(@RequestBody Student student){
-        studentService.addNewStudent(student);
+    public ResponseEntity<StudentResponse> registerNewStudent(
+            @RequestBody @Valid StudentRequest request){
+        Student createdStudent = studentService.addNewStudent(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(StudentResponse.fromStudent(createdStudent));
     }
 
-    @DeleteMapping(path = "{studentID}")
-    public void deleteStudent(@PathVariable("studentID") Long studentID){
+    // Delete student
+    @DeleteMapping(path = "/{studentID}")
+    public void deleteStudent(@PathVariable Long studentID){
         studentService.deleteStudent(studentID);
     }
 
-    // For Body in Postman
-    @PutMapping(path = "{studentID}")
+    // PUT
+    @PutMapping(path = "/{studentID}")
     public void updateStudent(
-            @PathVariable("studentID") Long studentID,
-            @RequestBody Student student){
-
-        studentService.updateStudent(studentID, student);
+            @PathVariable Long studentID,
+            @RequestBody @Valid StudentRequest request) {
+        studentService.updateStudent(studentID, request);
     }
 
-    @PatchMapping(path = "{studentID}")
-    public void updateStudentPatch(
+    // PATCH
+    @PatchMapping(path = "/{studentID}")
+    public void patchStudent(
             @PathVariable Long studentID,
-            @RequestBody Student student){
-
-        studentService.patchStudent(studentID, student);
+            @RequestBody @Valid StudentRequest request) {
+        studentService.patchStudent(studentID, request);
     }
 }
