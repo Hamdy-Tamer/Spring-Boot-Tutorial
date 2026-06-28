@@ -32,7 +32,9 @@ public class StudentController {
     @PostMapping
     public ResponseEntity<StudentResponse> registerNewStudent(
             @RequestBody @Valid StudentRequest request){
+
         Student createdStudent = studentService.addNewStudent(request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(StudentResponse.fromStudent(createdStudent));
@@ -47,23 +49,9 @@ public class StudentController {
     // PUT
     @PutMapping(path = "/{studentID}")
     public void updateStudent(
-<<<<<<< HEAD
             @PathVariable Long studentID,
             @RequestBody @Valid StudentRequest request) {
         studentService.updateStudent(studentID, request);
-=======
-            @PathVariable Long studentID,
-            @RequestBody @Valid StudentRequest request) {
-        studentService.updateStudent(studentID, request);
-    }
-
-    // PATCH
-    @PatchMapping(path = "/{studentID}")
-    public void patchStudent(
-            @PathVariable Long studentID,
-            @RequestBody @Valid StudentRequest request) {
-        studentService.patchStudent(studentID, request);
->>>>>>> 3ff12dc40d04fbe3a07f1ba702afd44f0a1f6e80
     }
 
     // PATCH
