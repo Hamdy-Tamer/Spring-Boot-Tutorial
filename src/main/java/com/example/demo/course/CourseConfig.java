@@ -9,7 +9,7 @@ import java.util.List;
 @Configuration
 public class CourseConfig {
     @Bean
-    CommandLineRunner commandLineRunner(CourseRepository repository){
+    CommandLineRunner courseCommandLineRunner(CourseRepository repository){
         return args -> {
             Course java = new Course("Java Backend Programming", "JAVA-101");
             Course spring = new Course("Political Science", "POLT-102");
