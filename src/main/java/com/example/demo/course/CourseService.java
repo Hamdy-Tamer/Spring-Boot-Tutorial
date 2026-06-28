@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,12 +19,19 @@ public class CourseService {
         this.courseRepository = courseRepository;
     }
 
-    public List<Course> getCourses(){
-        return courseRepository.findAll();
+    public List<CourseResponse> getCourses(){
+        return courseRepository.findAll()
+                .stream()
+                .map(course -> new CourseResponse(
+                        course.getCourseID(),
+                        course.getCourse_name(),
+                        course.getCourse_code()
+                ))
+                .toList();
     }
 
-    public void addNewCourse(Course course){
-        Optional<Course> courseOptional = courseRepository.findCourseByCourseCode(course.getCourse_code());
+    public CourseResponse addNewCourse(CourseRequest request){
+        Optional<Course> courseOptional = courseRepository.findCourseByCourseCode(request.course_code());
 
         if(courseOptional.isPresent()){
             throw new ResponseStatusException(
@@ -33,12 +39,24 @@ public class CourseService {
                     "Course code is taken"
             );
         }
-        courseRepository.save(course);
+
+        Course course = new Course(
+                request.course_name(),
+                request.course_code()
+        );
+
+        Course savedCourse = courseRepository.save(course);
+
+        return new CourseResponse(
+                savedCourse.getCourseID(),
+                savedCourse.getCourse_name(),
+                savedCourse.getCourse_code()
+        );
     }
 
-    public void deleteCourse(int courseID){
-        boolean exists = courseRepository.existsById(courseID);
-
+    public void deleteCourse(Long courseID){
+        boolean exists =
+                courseRepository.existsById(courseID);
         if(!exists){
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -50,7 +68,8 @@ public class CourseService {
 
     // PUT
     @Transactional
-    public void updateCourse(int courseID, Course updatedCourse){
+    public CourseResponse updateCourse(Long courseID, CourseRequest request){
+
         Course course =
                 courseRepository.findById(courseID)
                         .orElseThrow(() ->
@@ -59,18 +78,16 @@ public class CourseService {
                                         "Course with id " + courseID + " doesn't exist"
                                 ));
 
-        if(updatedCourse.getCourse_name() != null && !Objects.equals(course.getCourse_name(),
-                updatedCourse.getCourse_name())){
-            course.setCourse_name(updatedCourse.getCourse_name());
+
+        if(!Objects.equals(course.getCourse_name(), request.course_name())){
+            course.setCourse_name(
+                    request.course_name()
+            );
         }
 
-        if(updatedCourse.getCourse_code() != null && !Objects.equals(
-                        course.getCourse_code(),
-                        updatedCourse.getCourse_code())){
-            Optional<Course> courseOptional =
-                    courseRepository.findCourseByCourseCode(
-                            updatedCourse.getCourse_code()
-                    );
+        if(!Objects.equals(course.getCourse_code(), request.course_code())){
+
+            Optional<Course> courseOptional = courseRepository.findCourseByCourseCode(request.course_code());
 
             if(courseOptional.isPresent()){
                 throw new ResponseStatusException(
@@ -79,15 +96,19 @@ public class CourseService {
                 );
             }
 
-            course.setCourse_code(
-                    updatedCourse.getCourse_code()
-            );
+            course.setCourse_code(request.course_code());
         }
+
+        return new CourseResponse(
+                course.getCourseID(),
+                course.getCourse_name(),
+                course.getCourse_code()
+        );
     }
 
     // PATCH
     @Transactional
-    public void patchCourse(int courseID, Course updatedCourse){
+    public CourseResponse patchCourse(Long courseID, CoursePatchRequest request){
         Course course =
                 courseRepository.findById(courseID)
                         .orElseThrow(() ->
@@ -96,16 +117,14 @@ public class CourseService {
                                         "Course with id " + courseID + " doesn't exist"
                                 ));
 
-        if(updatedCourse.getCourse_name() != null){
-            course.setCourse_name(updatedCourse.getCourse_name());
+
+        if(request.course_name() != null){
+            course.setCourse_name(request.course_name());
         }
 
-        if(updatedCourse.getCourse_code() != null && !Objects.equals(
-                        course.getCourse_code(),
-                        updatedCourse.getCourse_code()
-                )){
+        if(request.course_code() != null && !Objects.equals(course.getCourse_code(), request.course_code())){
+            Optional<Course> courseOptional = courseRepository.findCourseByCourseCode(request.course_code());
 
-            Optional<Course> courseOptional = courseRepository.findCourseByCourseCode(updatedCourse.getCourse_code());
 
             if(courseOptional.isPresent()){
                 throw new ResponseStatusException(
@@ -113,7 +132,13 @@ public class CourseService {
                         "Course code is taken"
                 );
             }
-            course.setCourse_code(updatedCourse.getCourse_code());
+            course.setCourse_code(request.course_code());
         }
+
+        return new CourseResponse(
+                course.getCourseID(),
+                course.getCourse_name(),
+                course.getCourse_code()
+        );
     }
 }
