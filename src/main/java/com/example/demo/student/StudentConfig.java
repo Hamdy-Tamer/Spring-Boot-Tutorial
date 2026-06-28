@@ -12,7 +12,7 @@ import java.time.LocalDate;
 public class StudentConfig {
 
     @Bean
-    CommandLineRunner commandLineRunner(StudentRepository repository){
+    CommandLineRunner studentCommandLineRunner(StudentRepository repository){
         return args -> {
             Student hamdy = new Student("Hamdy", "hamdytamer253@gmail.com", LocalDate.of(2004, 8, 29));
             Student farah = new Student("Farah", "farahahmed690@gmail.com", LocalDate.of(2001, 5, 7));
